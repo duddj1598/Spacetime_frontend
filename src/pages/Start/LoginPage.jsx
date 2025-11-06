@@ -78,7 +78,7 @@ export default function LoginPage() {
             </label>
             <button
               type="button"
-              onClick={() => alert("비밀번호 찾기 기능은 보류 중입니다.")}
+              onClick={() => navigate("./findpassword")}
               className="hover:underline text-gray-500"
             >
               비밀번호 찾기 &gt;
