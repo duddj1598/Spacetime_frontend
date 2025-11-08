@@ -1,0 +1,330 @@
+/* 전체 구조 */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  background-color: #f8f4eb;
+}
+
+/* 사이드바 */
+.sidebar {
+  width: 80px;
+  background-color: #f3eee4;
+  border-right: 1px solid #dcd7c7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sidebar-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background-color: transparent;
+  color: #000;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.sidebar-icon.active {
+  border-color: #4b6b4b;
+  background-color: #ffffff;
+  color: #4b6b4b;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 메인 영역 */
+.main-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  padding: 40px;
+}
+
+/* 일기 작성 컨테이너 */
+.diary-container {
+  width: 100%;
+  max-width: 1300px; /* 기존 1100px → 1300px */
+  display: grid;
+  grid-template-columns: 1.2fr 1fr; /* 왼쪽 입력 부분 더 넓게 */
+  gap: 24px;
+  background-color: #f9f6ef;
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* 왼쪽 영역 */
+.diary-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.top-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.small-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.input-box {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.input-box input {
+  width: 100%;
+  font-size: 18px;
+  font-weight: 500;
+  outline: none;
+  border: none;
+}
+
+textarea {
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px;
+  outline: none;
+  resize: none;
+  color: #555;
+  height: 400px;
+  font-size: 13px;
+  line-height: 26px; /* 줄 간격 */
+  
+  /* ✨ 가로줄(연한 회색 라인) */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #ffffff 0px,
+    #ffffff 26px,
+    #eae7dd 27px
+  );
+  background-size: 100% 27px;
+}
+
+/* 오른쪽 영역 */
+.diary-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.photo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.photo-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 8px 16px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.photo-preview {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.photo-preview img {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.submit-btn {
+  align-self: flex-end;
+  background-color: #b08d57;
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+/* 친구 추가 화면 */
+.friends-container {
+  width: 100%;
+  max-width: 900px;
+  background-color: #f9f6ef;
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.friends-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 8px 12px;
+  flex: 1;
+}
+
+.search-box input {
+  flex: 1;
+  background: transparent;
+  outline: none;
+  border: none;
+}
+
+.add-friend-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #b08d57;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.friend-card {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid #ccc;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  background-color: #f3eee4;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.friend-name {
+  font-weight: 600;
+}
+
+.friend-desc {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.friend-btn {
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  background-color: #f8f4eb;
+  cursor: pointer;
+}
+
+.bottom-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: #444;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  accent-color: #b08d57; /* 체크 색상 */
+  transform: scale(1.1);
+}
+
+.friends-filter {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: none;
+  background-color: #e9e3d4;
+  color: #333;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.filter-btn.active {
+  background-color: #b6a583;
+  color: white;
+  font-weight: bold;
+}
+
+.friends-desc {
+  margin: 10px 0 20px 0;
+  font-size: 15px;
+  color: #444;
+}
+
