@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom'; // React Router Dom useLocation 
 const navItems = [
   { href: '/', icon: '🏠', label: '홈' },
   { href: '/friend', icon: '👤', label: '친구 관리' },
-  { href: '/record', icon: '➕', label: '기록 작성' },
+  { href: '/diary', icon: '➕', label: '기록 작성' },
   { href: '/alarm', icon: '🔔', label: '알림' }, 
   { href: '/mypage', icon: '🧑', label: '마이 페이지' }, // 마이 페이지 경로
 ];
