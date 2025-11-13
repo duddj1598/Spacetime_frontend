@@ -19,7 +19,7 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email,
+          id: email,
           password: password,
         }),
       });
@@ -28,12 +28,12 @@ export default function LoginPage() {
       console.log("login response:", data);
 
       // 🔥 백엔드 응답 형태에 따라 성공 여부 확인
-      if (response.ok && data.access_token) {
+      if (data.status === 200 && data.accessToken) {
         alert("로그인 성공!");
 
         // 🌟 JWT 저장 — 백엔드 명세에 따라 필드명 맞춤
-        localStorage.setItem("accessToken", data.access_token);
-        localStorage.setItem("refreshToken", data.refresh_token || "");
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken || "");
 
         // 아이디 저장
         if (remember) {

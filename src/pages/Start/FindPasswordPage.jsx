@@ -59,7 +59,7 @@ export default function FindPasswordPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ new_password: newPassword }),
+          body: JSON.stringify({ email: email, new_password: newPassword }),
         });
 
         const data = await response.json();
