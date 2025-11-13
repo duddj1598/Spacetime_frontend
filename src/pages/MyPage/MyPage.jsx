@@ -1,7 +1,5 @@
 // src/pages/MyPage/MyPage.jsx
 
-// Next.js 임포트 제거됨
-// import Image from 'next/image';
 
 // 경로 수정
 import Sidebar from '../../components/layout/Sidebar';
@@ -10,14 +8,12 @@ import StatSummary from '../../components/common/StatSummary';
 import MonthlyRecord from '../../components/main/MonthlyRecord';
 import UserProfile from '../../components/common/UserProfile'; 
 
-// 가상 데이터 (이미지 경로는 public 폴더 기준으로 조정 필요)
 const records = [
-  // public 폴더에 hongkong.png, jeju.png를 넣어두었다고 가정합니다.
   { imageUrl: "/hongkong.png", title: "홍콩 탐방기", location: "홍콩", date: "2025.02.15" },
   { imageUrl: "/jeju.png", title: "떠나요~ 제주도 같이!!", location: "제주도", date: "2024.12.08" },
 ];
 
-export default function MyPage() { // Home 대신 MyPage로 이름 변경
+export default function MyPage() { 
   return (
     <div className="flex bg-gray-50 min-h-screen">
       
@@ -55,7 +51,7 @@ export default function MyPage() { // Home 대신 MyPage로 이름 변경
             ))}
             {/* 마지막 '나만보기' 카드 */}
             <RecordCard 
-              imageUrl="/방어.png" // public 폴더에 방어.png가 있다고 가정
+              imageUrl="/방어.png" 
               title="기다리고 기다리던 방어 먹방"
               date="2024.11.30"
               location=""

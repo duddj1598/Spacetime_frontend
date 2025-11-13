@@ -12,7 +12,16 @@ export default function FriendsAdd() {
     { id: 4, name: "바람", desc: "하늘을 좋아하는 여행자", status: "요청" },
     { id: 5, name: "가을", desc: "하늘을 좋아하는 여행자", status: "수락됨" },
   ];
+const handleFriendAccept = (id, name) => {
+        setFriends(prevFriends => 
+            prevFriends.map(f => 
+                f.id === id ? { ...f, status: "수락됨" } : f
+            )
+        );
 
+        const friendPostURL = `/diary/${id}/latest`; 
+        addNotification(name, friendPostURL); 
+    };
   const filtered = friends.filter((f) => {
     if (filter === "전체") return true;
     if (filter === "요청 중") return f.status === "요청";
