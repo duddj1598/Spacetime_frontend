@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'; // React Router Dom useLocation 
 
 // 아이콘 및 경로 데이터
 const navItems = [
-  { href: '/', icon: '🏠', label: '홈' },
+  { href: '/main', icon: '🏠', label: '홈' },
   { href: '/friend', icon: '👤', label: '친구 관리' },
   { href: '/diary', icon: '➕', label: '기록 작성' },
   { href: '/alarm', icon: '🔔', label: '알림' }, 
