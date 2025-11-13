@@ -26,9 +26,9 @@ export default function SignupPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          nickname: nickname,
-          email: email,
+          id: email,
           password: password,
+          nickname: nickname,   
         }),
       });
 
@@ -59,7 +59,7 @@ export default function SignupPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="닉닉네임"
+              placeholder="닉네임"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               className="w-full border border-gray-300 rounded-md py-2 px-10 text-sm focus:outline-none focus:border-gray-500"
