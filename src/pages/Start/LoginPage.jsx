@@ -11,7 +11,7 @@ export default function LoginPage() {
   const handleLogin = (e) => {
     e.preventDefault();
     console.log("로그인 시도:", { email, password, remember });
-    navigate("/main"); // 로그인 성공 시 메인 페이지로 이동
+    navigate("/mypage"); // 로그인 성공 시 메인 페이지로 이동
   };
 
   return (
