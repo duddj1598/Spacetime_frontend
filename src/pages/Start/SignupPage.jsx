@@ -10,7 +10,8 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignup = (e) => {
+  /** 회원가입 API 연결 */
+  const handleSignup = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -18,10 +19,32 @@ export default function SignupPage() {
       return;
     }
 
-    // TODO: 실제 회원가입 로직 추가 (API 연결 예정)
-    console.log("회원가입 시도:", { nickname, email, password });
-    alert("회원가입이 완료되었습니다!");
-    navigate("/"); // 가입 후 로그인 화면으로 이동
+    try {
+      const response = await fetch("http://localhost:8000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: email,
+          password: password,
+          nickname: nickname,   
+        }),
+      });
+
+      const data = await response.json();
+      console.log("signup response:", data);
+
+      if (response.ok) {
+        alert("회원가입이 완료되었습니다!");
+        navigate("/"); // 성공 시 로그인 페이지로 이동
+      } else {
+        alert(data.message || "회원가입에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("회원가입 오류:", error);
+      alert("서버와 연결할 수 없습니다.");
+    }
   };
 
   return (
@@ -42,10 +65,7 @@ export default function SignupPage() {
               className="w-full border border-gray-300 rounded-md py-2 px-10 text-sm focus:outline-none focus:border-gray-500"
               required
             />
-            <User
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={18}
-            />
+            <User className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
 
           {/* 이메일 입력 */}
@@ -58,10 +78,7 @@ export default function SignupPage() {
               className="w-full border border-gray-300 rounded-md py-2 px-10 text-sm focus:outline-none focus:border-gray-500"
               required
             />
-            <Mail
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={18}
-            />
+            <Mail className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
 
           {/* 비밀번호 입력 */}
@@ -74,10 +91,7 @@ export default function SignupPage() {
               className="w-full border border-gray-300 rounded-md py-2 px-10 text-sm focus:outline-none focus:border-gray-500"
               required
             />
-            <Lock
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={18}
-            />
+            <Lock className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
 
           {/* 비밀번호 확인 */}
@@ -90,13 +104,9 @@ export default function SignupPage() {
               className="w-full border border-gray-300 rounded-md py-2 px-10 text-sm focus:outline-none focus:border-gray-500"
               required
             />
-            <Lock
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={18}
-            />
+            <Lock className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
 
-          {/* 회원가입 버튼 */}
           <button
             type="submit"
             className="w-full bg-[#d8d0c0] text-[#222] font-medium py-2 rounded-md hover:bg-[#cbbfa8] transition"
@@ -104,7 +114,6 @@ export default function SignupPage() {
             회원가입
           </button>
 
-          {/* 하단 링크 */}
           <p className="text-xs text-gray-600 text-center mt-2">
             이미 계정이 있으신가요?{" "}
             <button

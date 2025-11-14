@@ -5,7 +5,8 @@ import FindPassword from "../pages/Start/FindPasswordPage.jsx";
 import AlarmPage from '../pages/Friend/AlarmPage.jsx'; 
 import MyPage from '../pages/MyPage/MyPage.jsx';
 import Friend from '../pages/Friend/FriendAddPage.jsx';
-import Diary from "../pages/Diary/DiaryPage.jsx";
+import Diary from "../pages/Diary/DiaryWrite.jsx";
+import Main from "../pages/Main/MainPage.jsx";
 import App from "../App.jsx";
 
 export default function AppRouter() {
@@ -20,6 +21,7 @@ export default function AppRouter() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/friend" element={<Friend />} />
         <Route path="/diary" element={<Diary />} />
+        <Route path="/main" element={<Main />} />
       </Routes>
     </Router>
   );

@@ -8,10 +8,48 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
 
-  const handleLogin = (e) => {
+  /** 로그인 API 연결 */
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("로그인 시도:", { email, password, remember });
-    navigate("/main"); // 로그인 성공 시 메인 페이지로 이동
+
+    try {
+      const response = await fetch("http://localhost:8000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("login response:", data);
+
+      // 🔥 백엔드 응답 형태에 따라 성공 여부 확인
+      if (data.status === 200 && data.accessToken) {
+        alert("로그인 성공!");
+
+        // 🌟 JWT 저장 — 백엔드 명세에 따라 필드명 맞춤
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken || "");
+
+        // 아이디 저장
+        if (remember) {
+          localStorage.setItem("savedEmail", email);
+        } else {
+          localStorage.removeItem("savedEmail");
+        }
+
+        navigate("/main"); // 메인 페이지 이동
+      } else {
+        alert(data.message || "로그인 실패");
+      }
+    } catch (error) {
+      console.error("로그인 오류:", error);
+      alert("서버와 연결할 수 없습니다.");
+    }
   };
 
   return (
@@ -65,7 +103,7 @@ export default function LoginPage() {
             회원가입
           </button>
 
-          {/* 아이디 저장 & 비밀번호 찾기 */}
+          {/* 아이디 저장 + 비밀번호 찾기 */}
           <div className="flex justify-between items-center text-xs mt-2 text-gray-600">
             <label className="flex items-center gap-1">
               <input
@@ -78,7 +116,7 @@ export default function LoginPage() {
             </label>
             <button
               type="button"
-              onClick={() => navigate("./findpassword")}
+              onClick={() => navigate("/findpassword")}
               className="hover:underline text-gray-500"
             >
               비밀번호 찾기 &gt;

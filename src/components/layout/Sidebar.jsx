@@ -6,7 +6,7 @@ import { Home, UserPlus, Bell, User } from 'lucide-react';
 import './Diary.css'; // 너의 디자인 CSS 유지
 
 const navItems = [
-  { href: '/', icon: <Home size={24} />, label: '홈' },
+  { href: '/main', icon: <Home size={24} />, label: '홈' },
   { href: '/friend', icon: <UserPlus size={24} />, label: '친구 추가' },
   { href: '/alarm', icon: <Bell size={24} />, label: '알림' },
   { href: '/mypage', icon: <User size={24} />, label: '마이페이지' },
