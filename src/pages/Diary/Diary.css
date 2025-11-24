@@ -328,3 +328,74 @@ textarea {
   color: #444;
 }
 
+.map-container {
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.google-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===========================
+   DiaryWrite 지도 디자인 통일
+   =========================== */
+
+.diary-map-wrapper {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 지도 크기 통일 */
+.diary-map-container {
+  width: 100%;
+  height: 360px;        
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.diary-google-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* 지도 아래 날짜/공개하기 영역 */
+.diary-left-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.public-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #444;
+}
+
+.public-help {
+  font-size: 13px;
+  color: #777;
+}
