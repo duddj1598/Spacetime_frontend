@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LocationPickerModal from "./LocationPickerModal"; // 위치 선택용 서브 모달
 import "./DiaryCreateModal.css";
@@ -12,6 +13,7 @@ export default function DiaryCreateModal({
   onClose,
   onCreated,
 }) {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content] = useState(""); // 지금은 내용 입력 안 받는 디자인이니까 비워두고, 나중에 확장 가능
   const [location, setLocation] = useState(null); // { lat, lng }
@@ -33,15 +35,24 @@ export default function DiaryCreateModal({
     try {
       const res = await axios.post(`${API_BASE_URL}/api/folder/create`, {
         folder_id: folderId,
-        title,
+        title: title,
         content,
-        photos: [],      // 나중에 사진 기능 붙이면 여기 채우면 됨
+        photos: [],
         theme: null,
-        location,        // { lat, lng }
+        location: location,
       });
 
+      const diaryId = res.data.diary_id;   // ⬅ 다이어리 ID 가져오기
+
       if (onCreated) onCreated(res.data);
-      onClose();
+
+      onClose();   // 모달 닫기
+
+      // ⬅ 다이어리 상세 페이지로 이동
+      if (diaryId) {
+        navigate(`/diary/${diaryId}`);
+      }
+
     } catch (err) {
       console.error(err);
       alert("일기를 생성하는 중 오류가 발생했습니다.");

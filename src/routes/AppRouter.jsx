@@ -21,7 +21,7 @@ export default function AppRouter() {
         <Route path="/alarm" element={<AlarmPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/friend" element={<Friend />} />
-        <Route path="/diary" element={<Diary />} />
+        <Route path="/diary/:diary_id" element={<Diary />} />
         <Route path="/folder/:folderId" element={<FolderMapPage />} />
         <Route path="/main" element={<Main />} />
       </Routes>
