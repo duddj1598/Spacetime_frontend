@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -27,13 +28,23 @@ export default function LoginPage() {
       const data = await response.json();
       console.log("login response:", data);
 
-      // 🔥 백엔드 응답 형태에 따라 성공 여부 확인
+      // 🔥 성공 여부 확인
       if (data.status === 200 && data.accessToken) {
         alert("로그인 성공!");
 
-        // 🌟 JWT 저장 — 백엔드 명세에 따라 필드명 맞춤
+        // 🌟 JWT 저장
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken || "");
+
+        // 🔥 토큰 decode
+        const decoded = jwtDecode(data.accessToken);
+        console.log("decoded token:", decoded);
+
+        /** 
+         * 🔥 userId 저장 (가장 중요!!)
+         * FastAPI는 userId를 sub에 넣어서 JWT 생성함
+         */
+        localStorage.setItem("userId", decoded.sub);
 
         // 아이디 저장
         if (remember) {
@@ -42,7 +53,7 @@ export default function LoginPage() {
           localStorage.removeItem("savedEmail");
         }
 
-        navigate("/main"); // 메인 페이지 이동
+        navigate("/main");
       } else {
         alert(data.message || "로그인 실패");
       }
