@@ -1,82 +1,118 @@
 // src/components/main/MonthlyRecord.jsx
 
-// 'use client' 제거됨
-import { useState } from 'react';
+import { useState } from "react";
+import axios from "axios";
 
-// 초기 기록 문구
-const INITIAL_RECORD = "이번 달의 한 줄 기록 추가하기";
-
-const MonthlyRecord = () => {
-  // 1. 현재 기록 텍스트 상태
-  const [recordText, setRecordText] = useState(INITIAL_RECORD);
-  // 2. 수정 모드 상태
+export default function MonthlyRecord({ monthlyNote, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
-  // 3. 임시 입력 값 상태
-  const [tempInput, setTempInput] = useState(INITIAL_RECORD);
+  const [noteText, setNoteText] = useState(monthlyNote || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Enter 키를 눌렀을 때 실행되는 함수
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      saveRecord();
+  const handleSubmit = async () => {
+    if (!noteText.trim()) {
+      alert("한 줄 기록을 입력해주세요.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      await axios.put(
+        "http://localhost:8000/api/user/monthly-note",
+        { monthly_note: noteText },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      alert("✅ 이번 달의 한 줄 기록이 수정되었습니다.");
+      setIsEditing(false);
+      
+      // 부모 컴포넌트에 업데이트 알림
+      if (onUpdate) {
+        onUpdate(noteText);
+      }
+
+    } catch (err) {
+      console.error("❌ 한 줄 기록 수정 실패:", err);
+      alert("수정에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // 저장 함수
-  const saveRecord = () => {
-    setRecordText(tempInput); // 임시 값을 최종 기록 텍스트로 저장
-    setIsEditing(false); // 수정 모드 종료
+  const handleCancel = () => {
+    setNoteText(monthlyNote || "");
+    setIsEditing(false);
   };
-  
-  // 수정 시작 함수
-  const startEditing = () => {
-    setTempInput(recordText); // 현재 기록을 임시 값으로 설정
-    setIsEditing(true); // 수정 모드 시작
-  }
 
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-md p-4 shadow-sm">
-      <h3 className="text-base font-semibold border-b pb-2 mb-3 flex items-center">
-        <span className="mr-2">📝</span>이번 달의 한 줄 기록
+    <section className="bg-white rounded-lg shadow-md border border-gray-100 p-6">
+      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        <span>✍️</span>
+        이번 달의 한 줄 기록
       </h3>
-      <p className="text-sm text-gray-600 mb-4">
-        이번 달, 2개의 여정을 기록했어요.
-      </p>
       
-      {/* 수정 모드와 보기 모드를 조건부 렌더링 */}
+      <p className="text-sm text-gray-600 mb-4">
+        이번 달, {/* 여기에 일기 개수를 표시할 수 있습니다 */}개의 여정을 기록했어요.
+      </p>
+
       {isEditing ? (
-        // ********** 🛠️ 수정 모드 (Input Field) **********
-        <div className="border border-blue-500 rounded-md p-2 flex justify-between items-center bg-white shadow-inner">
-          <input
-            type="text"
-            value={tempInput}
-            onChange={(e) => setTempInput(e.target.value)}
-            onKeyDown={handleKeyDown} // Enter 키 감지
-            className="w-full focus:outline-none text-gray-700 italic"
-            autoFocus // 자동으로 포커스 이동
-          />
-          <button 
-            onClick={saveRecord}
-            className="text-blue-600 text-xs font-semibold hover:underline ml-2"
-          >
-            저장
-          </button>
+        <div className="space-y-4">
+          <div className="relative bg-[#FFF8F0] p-4 rounded-lg border-2 border-dashed border-gray-300">
+            <input
+              type="text"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="바람이 나를 다시 바다로 이끌었다."
+              maxLength={100}
+              className="w-full bg-transparent border-none outline-none text-gray-800 text-center italic"
+              autoFocus
+            />
+            <div className="text-xs text-gray-500 text-right mt-2">
+              {noteText.length} / 100
+            </div>
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-[#8B4513] text-white rounded-full hover:bg-[#6B3410] transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? "수정 중..." : "수정"}
+            </button>
+          </div>
         </div>
       ) : (
-        // ********** 👓 보기 모드 (Display Text) **********
-        <div className="border border-gray-300 rounded-md p-3 flex justify-between items-center bg-gray-50">
-          <p className="italic text-gray-700">
-            “{recordText}“
+        <div className="relative bg-[#FFF8F0] p-6 rounded-lg min-h-[120px] flex items-center justify-center">
+          <p className="text-gray-800 text-lg italic text-center">
+            {monthlyNote ? (
+              `" ${monthlyNote} "`
+            ) : (
+              <span className="text-gray-400">
+                이번 달의 한 줄 기록을 작성해보세요
+              </span>
+            )}
           </p>
-          <button 
-            onClick={startEditing}
-            className="text-blue-600 text-xs font-semibold hover:underline"
+
+          <button
+            onClick={() => setIsEditing(true)}
+            className="absolute bottom-4 right-4 px-4 py-2 bg-white text-[#8B4513] border border-[#8B4513] rounded-full hover:bg-[#8B4513] hover:text-white transition-colors text-sm"
           >
-            수정
+            {monthlyNote ? "수정하기" : "작성하기"}
           </button>
         </div>
       )}
-    </div>
+    </section>
   );
-};
-
-export default MonthlyRecord;
+}

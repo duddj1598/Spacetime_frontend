@@ -84,6 +84,7 @@ export default function FriendsAdd() {
       fetchFriends();
       fetchPending();
     } catch (err) {
+      console.error("처리실패:", err);
       alert("처리 실패");
     }
   };
