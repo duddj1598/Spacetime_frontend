@@ -3,30 +3,19 @@ import { Search, Plus, Calendar, MapPin, Globe, Lock, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// Sidebar 컴포넌트 임포트 (경로: src/pages/Main/MainPage.jsx 기준)
 import Sidebar from '../../components/layout/Sidebar'; 
 
 const API_BASE_URL = "http://localhost:8000/api/folder"; 
-const currentUserId = "test@user.com"; 
 
-// --- API 호출 실패 시 사용될 목업 데이터 ---
-const FALLBACK_RECORDS = [
-    { id: 99, title: "여행 기록 없음", date: "N/A", visibility: "public", location: "시작하세요", imgUrl: "https://via.placeholder.com/300x200?text=Start+Here" },
-];
+// ⭐️ JWT에서 userId 가져오기 ⭐️
+const getCurrentUserId = () => {
+    return localStorage.getItem("userId") || "test@user.com";
+};
 
-const FRIEND_RECORDS = [
-    { id: 1, friend: "이지우", date: "2024.11.04", caption: "나도 왔다 디즈니씨", imgUrl: "https://via.placeholder.com/150x150?text=Friend1", avatar: "👤" },
-    { id: 2, friend: "백도윤", date: "2024.10.25", caption: "이 맛에 새우 먹지~", imgUrl: "https://via.placeholder.com/150x150?text=Friend2", avatar: "👤" },
-    { id: 3, friend: "김하윤", date: "2024.09.04", caption: "돌하르방반방", imgUrl: "https://via.placeholder.com/150x150?text=Friend3", avatar: "👤" },
-    { id: 4, friend: "정하준", date: "2024.09.01", caption: "여행 싱글 챌린지", imgUrl: "https://via.placeholder.com/150x150?text=Friend4", avatar: "👤" },
-    { id: 5, friend: "백서아", date: "2024.08.25", caption: "이게 대한민국 바다라구?", imgUrl: "https://via.placeholder.com/150x150?text=Friend5", avatar: "👤" },
-    { id: 6, friend: "이재원", date: "2024.05.13", caption: "에펠탑 심쿵 실물", imgUrl: "https://via.placeholder.com/150x150?text=Friend6", avatar: "👤" },
-];
 
-// --- ⭐️ FolderAddModal 컴포넌트 (STEP 1: API 호출 및 ID 반환) ⭐️ ---
+// --- FolderAddModal 컴포넌트 ---
 const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
     const [folderTitle, setFolderTitle] = useState(''); 
-    const navigate = useNavigate(); 
 
     if (!isOpen) return null;
     
@@ -37,11 +26,12 @@ const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
         }
 
         try {
-            // 1. ⭐️ API 호출: 새 폴더 생성 (POST /api/folder) ⭐️
+            const currentUserId = getCurrentUserId();
+            
             const response = await axios.post(`${API_BASE_URL}`, {
                 title: folderTitle,
                 user_id: currentUserId, 
-                is_public: true, 
+                is_public: false,  // ⭐️ 기본값을 비공개로 변경
                 main_folder_img: "", 
             });
 
@@ -50,13 +40,11 @@ const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
             if (!newFolderId) throw new Error("서버에서 folder_id를 받지 못했습니다.");
 
             onClose(); 
-            
-            // 2. ⭐️ 생성 성공 후 콜백 실행 (MainPage에서 목록 갱신 및 네비게이션 담당) ⭐️
             onFolderCreated(newFolderId); 
 
         } catch (error) {
             console.error("폴더 생성 실패:", error);
-            alert("폴더 생성 중 오류가 발생했습니다. 서버 상태를 확인하세요."); 
+            alert("폴더 생성 중 오류가 발생했습니다."); 
         } finally {
             setFolderTitle('');
         }
@@ -122,50 +110,60 @@ const CalendarHeader = ({ title, showAddButton = false, onAddClick }) => (
     </div>
 );
 
+// ⭐️ 내 폴더 카드 컴포넌트 ⭐️
 const MyRecordCard = ({ record }) => {
-    const visibilityStatus = record.visibility || (record.is_public ? 'public' : 'private');
-    const VisibilityIcon = visibilityStatus === 'public' ? Globe : Lock; 
+    const VisibilityIcon = record.is_public ? Globe : Lock; 
     
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow">
             <div className="relative">
-                <img src={record.imgUrl || record.main_folder_img || "placeholder-url"} alt={record.title} className="w-full h-40 object-cover" />
-                <span className="absolute top-2 right-2 text-sm bg-black bg-opacity-50 text-white px-2 py-0.5 rounded-full flex items-center">
-                    <Calendar size={12} className="mr-1" /> {record.date ? record.date.split('.').slice(0, 2).join('.') : "N/A"}
+                <img 
+                    src={record.main_folder_img || "https://via.placeholder.com/300x200?text=No+Image"} 
+                    alt={record.title} 
+                    className="w-full h-40 object-cover" 
+                />
+                <span className="absolute top-2 right-2 text-xs bg-black bg-opacity-50 text-white px-2 py-1 rounded-full flex items-center gap-1">
+                    <VisibilityIcon size={12} />
+                    {record.is_public ? '공개' : '비공개'}
                 </span>
             </div>
             <div className="p-4">
                 <h3 className="text-base font-semibold text-gray-800 mb-2 truncate">{record.title}</h3>
                 <div className="flex justify-between text-xs text-gray-500">
-                    <div className="flex items-center space-x-2">
-                        <VisibilityIcon size={12} />
-                        <span>{visibilityStatus}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                        <MapPin size={12} />
-                        <span className="truncate max-w-[100px]">{record.location || '위치 정보 없음'}</span>
-                    </div>
+                    <span>일기 {record.diary_count || 0}개</span>
                 </div>
             </div>
         </div>
     );
 };
 
-const FriendPostTile = ({ post }) => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 cursor-pointer hover:shadow-md transition-shadow">
-        <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-                <span className="text-lg mr-2">{post.avatar}</span>
-                <span className="text-xs font-semibold text-gray-800">{post.friend}</span>
+// ⭐️ 친구 폴더 카드 컴포넌트 ⭐️
+const FriendFolderCard = ({ folder, onClick }) => {
+    return (
+        <div 
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={onClick}
+        >
+            <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg">👤</span>
+                    <span className="text-xs font-semibold text-gray-800">{folder.owner_nickname}</span>
+                </div>
             </div>
-            <span className="text-[10px] text-gray-500">{post.date}</span>
+            
+            {folder.main_folder_img && (
+                <img 
+                    src={folder.main_folder_img} 
+                    alt={folder.title} 
+                    className="w-full h-24 object-cover rounded mb-2" 
+                />
+            )}
+            
+            <h4 className="text-sm font-semibold text-gray-800 truncate mb-1">{folder.title}</h4>
+            <p className="text-xs text-gray-500">일기 {folder.diary_count || 0}개</p>
         </div>
-        
-        <img src={post.imgUrl} alt={post.caption} className="w-full h-24 object-cover rounded mb-2" />
-        
-        <p className="text-xs text-gray-600 truncate">{post.caption}</p>
-    </div>
-);
+    );
+};
 
 
 // --- 메인 컴포넌트 ---
@@ -173,35 +171,54 @@ export default function MainPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
-    // ⭐️ API 데이터를 저장할 상태 ⭐️
     const [myRecords, setMyRecords] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [friendFolders, setFriendFolders] = useState([]);
+    const [isLoadingMy, setIsLoadingMy] = useState(true);
+    const [isLoadingFriends, setIsLoadingFriends] = useState(true);
     
-    // ⭐️ 데이터 로드 함수 ⭐️
+    // ⭐️ 내 폴더 목록 로드 ⭐️
     const fetchMyRecords = async () => {
-        setIsLoading(true);
+        setIsLoadingMy(true);
         try {
-            // 405 오류 해결: API 경로 '/list/me' 사용
+            const currentUserId = getCurrentUserId();
             const response = await axios.get(`${API_BASE_URL}/list/me?user_id=${currentUserId}`);
             
-            setMyRecords(response.data.folders || response.data); 
+            console.log("✅ 내 폴더 목록:", response.data);
+            setMyRecords(response.data.folders || []);
         } catch (error) {
-            console.error("폴더 리스트 로드 실패:", error);
-            setMyRecords(FALLBACK_RECORDS); // 실패 시 목업 데이터 사용
+            console.error("❌ 내 폴더 로드 실패:", error);
+            setMyRecords([]);
         } finally {
-            setIsLoading(false);
+            setIsLoadingMy(false);
         }
     };
 
+    // ⭐️ 친구 폴더 목록 로드 ⭐️
+    const fetchFriendFolders = async () => {
+        setIsLoadingFriends(true);
+        try {
+            const currentUserId = getCurrentUserId();
+            const response = await axios.get(`${API_BASE_URL}/list/friends?user_id=${currentUserId}`);
+            
+            console.log("✅ 친구 폴더 목록:", response.data);
+            setFriendFolders(response.data.folders || []);
+        } catch (error) {
+            console.error("❌ 친구 폴더 로드 실패:", error);
+            setFriendFolders([]);
+        } finally {
+            setIsLoadingFriends(false);
+        }
+    };
+
+    // 컴포넌트 마운트 시 데이터 로드
     useEffect(() => {
         fetchMyRecords();
+        fetchFriendFolders();
     }, []); 
 
-    // ⭐️ 폴더 생성 성공 후: 목록 갱신 및 ID 기반 페이지 이동 ⭐️
+    // 폴더 생성 성공 후 처리
     const handleModalCreationSuccess = (newFolderId) => {
-        // 1. 목록 갱신 (새 폴더가 메인 화면에 보이도록)
         fetchMyRecords(); 
-        // 2. ⭐️ 폴더 ID 기반 페이지로 이동 (http://localhost:5173/folder/ID) ⭐️
         navigate(`/folder/${newFolderId}`);
     };
 
@@ -213,7 +230,7 @@ export default function MainPage() {
             <main className="flex-grow ml-20 p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     
-                    {/* 나의 기록 섹션 */}
+                    {/* ⭐️ 왼쪽: 나의 기록 섹션 ⭐️ */}
                     <section>
                         <div className="relative flex justify-between w-full pb-2 mb-4 border-b border-gray-300">
                             <h2 className="text-xl font-bold text-gray-700">나의 기록</h2>
@@ -225,18 +242,20 @@ export default function MainPage() {
                             </button>
                         </div>
 
-                        {isLoading ? (
+                        {isLoadingMy ? (
                             <p className="mt-4 text-center text-gray-500">기록을 불러오는 중...</p>
                         ) : (
                             <div className="mt-4 space-y-6">
                                 {myRecords.length === 0 ? (
-                                    <p className="text-center text-gray-500">아직 기록된 폴더가 없습니다.</p>
+                                    <p className="text-center text-gray-500">
+                                        아직 기록된 폴더가 없습니다.<br/>
+                                        + 버튼을 눌러 첫 폴더를 만들어보세요!
+                                    </p>
                                 ) : (
                                     myRecords.map(record => (
                                         <div 
-                                            key={record.id || record.folder_id} 
-                                            // 폴더를 클릭하면 해당 폴더 페이지로 이동
-                                            onClick={() => navigate(`/folder/${record.id || record.folder_id}`)}
+                                            key={record.folder_id} 
+                                            onClick={() => navigate(`/folder/${record.folder_id}`)}
                                         >
                                             <MyRecordCard record={record} /> 
                                         </div>
@@ -246,31 +265,36 @@ export default function MainPage() {
                         )}
                     </section>
                     
-                    {/* 남의 기록 섹션 (유지) */}
+                    {/* ⭐️ 오른쪽: 친구의 기록 섹션 ⭐️ */}
                     <section>
-                        <CalendarHeader title="남의 기록" />
+                        <CalendarHeader title="친구의 기록" />
                         
-                        <div className="flex items-center border border-gray-300 rounded-full p-2 mt-4 mb-6 bg-white shadow-sm">
-                            <Search size={18} className="text-gray-500 ml-2" />
-                            <input 
-                                type="text" 
-                                placeholder="해시태그 검색" 
-                                className="w-full px-3 py-1 focus:outline-none text-sm text-gray-700"
-                            />
-                        </div>
-                        
-                        <h3 className="text-lg font-bold text-gray-700 mb-4">친구의 기록</h3>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                            {FRIEND_RECORDS.map(post => (
-                                <FriendPostTile key={post.id} post={post} />
-                            ))}
-                        </div>
+                        {isLoadingFriends ? (
+                            <p className="mt-4 text-center text-gray-500">친구 폴더를 불러오는 중...</p>
+                        ) : (
+                            <>
+                                {friendFolders.length === 0 ? (
+                                    <div className="text-center text-gray-500 py-8">
+                                        <p className="mb-2">친구의 공개 폴더가 없습니다.</p>
+                                        <p className="text-sm">친구를 추가하거나 친구가 폴더를 공개할 때까지 기다려보세요!</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {friendFolders.map(folder => (
+                                            <FriendFolderCard 
+                                                key={folder.folder_id} 
+                                                folder={folder}
+                                                onClick={() => navigate(`/folder/${folder.folder_id}`)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </section>
                 </div>
             </main>
             
-            {/* ⭐️ FolderAddModal 호출 및 onFolderCreated prop 연결 ⭐️ */}
             <FolderAddModal 
                 isOpen={isModalOpen} 
                 onClose={() => setIsModalOpen(false)} 

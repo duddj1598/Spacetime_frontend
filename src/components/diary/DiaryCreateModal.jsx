@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useJsApiLoader } from "@react-google-maps/api"; // ⭐️ 추가
 import axios from "axios";
-import LocationPickerModal from "./LocationPickerModal"; // 위치 선택용 서브 모달
+import LocationPickerModal from "./LocationPickerModal";
 import "./DiaryCreateModal.css";
 
-
-const API_BASE_URL = "http://localhost:8000"; // 백엔드 주소에 맞게 변경
+const API_BASE_URL = "http://localhost:8000";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const LIBRARIES = ['places']; // ⭐️ 통일
 
 export default function DiaryCreateModal({
   folderId,
@@ -15,9 +17,15 @@ export default function DiaryCreateModal({
 }) {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
-  const [content] = useState(""); // 지금은 내용 입력 안 받는 디자인이니까 비워두고, 나중에 확장 가능
-  const [location, setLocation] = useState(null); // { lat, lng }
+  const [content] = useState("");
+  const [location, setLocation] = useState(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+
+  // ⭐️ Google Maps 로더 추가 ⭐️
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: LIBRARIES,
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,13 +50,12 @@ export default function DiaryCreateModal({
         location: location,
       });
 
-      const diaryId = res.data.diary_id;   // ⬅ 다이어리 ID 가져오기
+      const diaryId = res.data.diary_id;
 
       if (onCreated) onCreated(res.data);
 
-      onClose();   // 모달 닫기
+      onClose();
 
-      // ⬅ 다이어리 상세 페이지로 이동
       if (diaryId) {
         navigate(`/diary/${diaryId}`);
       }
@@ -61,10 +68,8 @@ export default function DiaryCreateModal({
 
   return (
     <>
-      {/* 배경 어둡게 */}
       <div className="diary-modal-backdrop">
         <div className="diary-modal">
-          {/* 상단 타이틀 영역 */}
           <div className="diary-modal-header">
             <span className="diary-modal-title">
               [{folderTitle}]에 일기 추가하기
@@ -84,7 +89,6 @@ export default function DiaryCreateModal({
               onChange={(e) => setTitle(e.target.value)}
             />
 
-            {/* 위치 추가 버튼 */}
             <button
               type="button"
               className="location-add-button"
@@ -101,7 +105,6 @@ export default function DiaryCreateModal({
             </button>
           </div>
 
-          {/* 하단 생성하기 버튼 */}
           <div className="diary-modal-footer">
             <button className="diary-create-button" onClick={handleSubmit}>
               생성하기
@@ -110,7 +113,7 @@ export default function DiaryCreateModal({
         </div>
       </div>
 
-      {/* 위치 선택 모달 */}
+      {/* ⭐️ isMapLoaded 전달 ⭐️ */}
       {showLocationPicker && (
         <LocationPickerModal
           onClose={() => setShowLocationPicker(false)}
@@ -118,6 +121,7 @@ export default function DiaryCreateModal({
             setLocation(loc);
             setShowLocationPicker(false);
           }}
+          isMapLoaded={isLoaded}
         />
       )}
     </>
