@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Plus, X, MapPin } from 'lucide-react';
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api"; 
 import axios from 'axios';
 
-// LocationPickerModal 임포트 필요
-import LocationPickerModal from './LocationPickerModal'; 
+// LocationPickerModal 임포트
+import LocationPickerModal from '../../components/diary/LocationPickerModal'; 
 
-// ⭐️ API 및 지도 설정 상수 (성능 경고 해결) ⭐️
+// ⭐️ API 및 지도 설정 상수 ⭐️
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY; 
 const LIBRARIES = ['places']; 
 
@@ -16,8 +16,7 @@ const containerStyle = { width: '100%', height: '100%' };
 const defaultCenter = { lat: 37.5665, lng: 126.9780 };
 
 
-// --- DiaryAddModal Definition (STEP 3) ---
-// ⭐️ selectedLocation prop 추가 ⭐️
+// --- DiaryAddModal 컴포넌트 ---
 const DiaryAddModal = ({ isOpen, onClose, folderTitle, onDiaryCreate, onOpenLocationPicker, selectedLocation }) => {
     const [diaryTitle, setDiaryTitle] = useState(''); 
 
@@ -28,14 +27,12 @@ const DiaryAddModal = ({ isOpen, onClose, folderTitle, onDiaryCreate, onOpenLoca
             alert("일기 제목을 입력해주세요.");
             return;
         }
-        // ⭐️ 위치 데이터 필수 검사 ⭐️
         if (!selectedLocation) {
             alert("위치를 추가해주세요.");
             return;
         }
         
         onClose();
-        // ⭐️ 위치 데이터를 포함하여 네비게이션 함수 호출 ⭐️
         onDiaryCreate(folderTitle, diaryTitle, selectedLocation); 
         setDiaryTitle('');
     };
@@ -56,20 +53,17 @@ const DiaryAddModal = ({ isOpen, onClose, folderTitle, onDiaryCreate, onOpenLoca
                     className="w-full p-2 border rounded mb-3" 
                 />
                 
-                {/* ⭐️ 위치 추가 버튼: 피커 모달 열기 ⭐️ */}
                 <button 
                     onClick={onOpenLocationPicker}
-                    // ⭐️ 선택된 위치에 따라 버튼 스타일 변경 ⭐️
                     className={`w-full p-2 border rounded mb-4 flex items-center justify-center space-x-2 transition-colors 
                                ${selectedLocation ? 'border-green-500 text-green-700 font-bold bg-green-50' : 'text-gray-700 hover:bg-gray-50'}`}
                 >
                     <MapPin size={20} /> <span>{selectedLocation ? "위치 선택됨" : "위치 추가"}</span>
                 </button>
                 
-                {/* ⭐️ 생성하기 버튼: 일기 제목 및 위치가 모두 있어야 활성화 ⭐️ */}
                 <button 
                     onClick={handleCreate}
-                    disabled={diaryTitle.length === 0 || !selectedLocation} // 위치가 없으면 비활성화
+                    disabled={diaryTitle.length === 0 || !selectedLocation}
                     className={`w-full py-3 rounded-xl font-bold text-white transition-all hover:bg-red-600 ${
                         diaryTitle.length === 0 || !selectedLocation
                             ? 'bg-gray-300 cursor-not-allowed'
@@ -89,10 +83,9 @@ export default function FolderMapPage() {
     const { folderId } = useParams();
     const navigate = useNavigate(); 
     
-    // ⭐️ 위치 피커 및 임시 위치 상태 ⭐️
     const [isDiaryModalOpen, setIsDiaryModalOpen] = useState(false);
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false); 
-    const [selectedCreationLocation, setSelectedCreationLocation] = useState(null); // 모달 간 공유 상태
+    const [selectedCreationLocation, setSelectedCreationLocation] = useState(null);
 
     const [diaries, setDiaries] = useState([]);
     const [folderTitle, setFolderTitle] = useState(`폴더 ${folderId} 로드 중...`); 
@@ -104,18 +97,74 @@ export default function FolderMapPage() {
         libraries: LIBRARIES, 
     });
 
-    const fetchFolder = useCallback(async () => { /* ... API 로직 ... */ }, [folderId]);
-    useEffect(() => { fetchFolder(); }, [fetchFolder]);
+    // ⭐️ fetchFolder 함수 구현 ⭐️
+    const fetchFolder = useCallback(async () => {
+        if (!folderId) {
+            console.error("❌ folderId가 없습니다.");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            console.log(`📥 폴더 정보 조회 시작: folderId=${folderId}`);
+            
+            // ✅ 백엔드 API 호출: GET /api/folder/detail?folder_id={folderId}
+            const response = await axios.get(`${API_BASE_URL}/api/folder/detail`, {
+                params: { folder_id: folderId }
+            });
+
+            console.log("✅ 폴더 정보 응답:", response.data);
+
+            if (response.data.status === 200) {
+                const folderData = response.data.folder;
+                
+                // 폴더 제목 설정
+                setFolderTitle(folderData.title);
+                
+                // 일기 목록 설정
+                setDiaries(folderData.diaries || []);
+                
+                console.log(`✅ 폴더 로드 완료: ${folderData.title}, 일기 ${folderData.diaries?.length || 0}개`);
+            } else {
+                throw new Error("폴더 정보를 불러올 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("❌ 폴더 조회 실패:", error);
+            
+            if (error.response) {
+                console.error("응답 상태:", error.response.status);
+                console.error("응답 데이터:", error.response.data);
+                
+                if (error.response.status === 404) {
+                    alert("폴더를 찾을 수 없습니다.");
+                    navigate('/main'); // 메인 페이지로 돌아가기
+                } else {
+                    alert(`폴더 조회 실패: ${error.response.data.detail || error.message}`);
+                }
+            } else {
+                alert("서버와 연결할 수 없습니다.");
+            }
+            
+            setFolderTitle(`폴더 ${folderId} (로드 실패)`);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [folderId, navigate]);
+
+    // 컴포넌트 마운트 시 폴더 정보 로드
+    useEffect(() => { 
+        fetchFolder(); 
+    }, [fetchFolder]);
 
 
-    // ⭐️ 최종 네비게이션 함수: 위치 데이터를 쿼리 파라미터로 전달 ⭐️
+    // ⭐️ 최종 네비게이션 함수 ⭐️
     const handleDiaryCreationSuccess = (folderTitle, diaryTitle, location) => {
-        // 새 일기 작성/편집 페이지로 이동
         navigate(`/diary/write?folderId=${folderId}&title=${encodeURIComponent(diaryTitle)}&lat=${location.lat}&lng=${location.lng}`); 
     };
 
+    // 지도 중심 좌표 계산
     const mapCenter = (selectedCreationLocation) 
-        ? selectedCreationLocation // 새로 선택된 위치 우선
+        ? selectedCreationLocation
         : (diaries.length > 0 && diaries[0].location) 
             ? { lat: diaries[0].location.lat, lng: diaries[0].location.lng }
             : defaultCenter;
@@ -124,9 +173,11 @@ export default function FolderMapPage() {
     return (
         <div className="min-h-screen bg-gray-50 p-8 ml-20"> 
             
-            <h1 className="text-2xl font-bold mb-4">지도 페이지: {folderTitle}</h1>
+            <h1 className="text-2xl font-bold mb-4">
+                지도 페이지: {isLoading ? "로딩 중..." : folderTitle}
+            </h1>
             
-            {/* 지도 영역 (Google Map) */}
+            {/* 지도 영역 */}
             <div className="relative border-4 border-gray-300 h-[600px] bg-white">
                 
                 {isLoaded ? (
@@ -136,52 +187,97 @@ export default function FolderMapPage() {
                         zoom={diaries.length > 0 || selectedCreationLocation ? 10 : 3}
                         options={{ disableDefaultUI: true }}
                     >
+                        {/* 기존 일기들의 위치 마커 */}
                         {diaries.map((diary, index) => (
                             diary.location ? (
-                                <Marker key={diary.diary_id} position={diary.location} />
+                                <Marker 
+                                    key={diary.diary_id} 
+                                    position={diary.location}
+                                    title={diary.title}
+                                />
                             ) : null
                         ))}
-                        {/* ⭐️ 임시 선택된 위치를 지도에 표시 ⭐️ */}
-                        {selectedCreationLocation && <Marker position={selectedCreationLocation} />}
+                        
+                        {/* 임시 선택된 위치 마커 */}
+                        {selectedCreationLocation && (
+                            <Marker 
+                                position={selectedCreationLocation} 
+                                icon={{
+                                    url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                                }}
+                            />
+                        )}
                     </GoogleMap>
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">Google 지도를 로드 중...</div>
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                        Google 지도를 로드 중...
+                    </div>
                 )}
 
 
-                {/* (+) 버튼 (DiaryAddModal 트리거) */}
+                {/* (+) 버튼 */}
                 <button 
                     onClick={() => setIsDiaryModalOpen(true)}
                     className="absolute bottom-5 right-5 p-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors z-10" 
+                    disabled={isLoading}
                 >
                     <Plus size={30} />
                 </button>
             </div>
             
-            {/* DiaryAddModal 렌더링 */}
+            {/* 일기 목록 표시 (선택사항) */}
+            <div className="mt-6">
+                <h2 className="text-xl font-semibold mb-3">이 폴더의 일기 ({diaries.length}개)</h2>
+                {diaries.length === 0 ? (
+                    <p className="text-gray-500">아직 일기가 없습니다. + 버튼을 눌러 첫 일기를 추가해보세요!</p>
+                ) : (
+                    <div className="grid grid-cols-3 gap-4">
+                        {diaries.map((diary) => (
+                            <div 
+                                key={diary.diary_id} 
+                                className="p-4 bg-white rounded-lg shadow border cursor-pointer hover:shadow-lg transition"
+                                onClick={() => navigate(`/diary/${diary.diary_id}`)}
+                            >
+                                {diary.main_photo && (
+                                    <img 
+                                        src={diary.main_photo} 
+                                        alt={diary.title} 
+                                        className="w-full h-32 object-cover rounded mb-2"
+                                    />
+                                )}
+                                <h3 className="font-semibold truncate">{diary.title}</h3>
+                                {diary.location && (
+                                    <p className="text-sm text-gray-500">
+                                        📍 {diary.location.lat.toFixed(2)}, {diary.location.lng.toFixed(2)}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            
+            {/* DiaryAddModal */}
             <DiaryAddModal 
                 isOpen={isDiaryModalOpen} 
                 onClose={() => setIsDiaryModalOpen(false)} 
                 folderTitle={folderTitle}
                 onDiaryCreate={handleDiaryCreationSuccess}
-                
-                // ⭐️ FIX: 위치 선택 상태를 모달에 전달 ⭐️
                 onOpenLocationPicker={() => setIsLocationPickerOpen(true)}
-                selectedLocation={selectedCreationLocation} // 현재 선택된 위치 상태 전달
+                selectedLocation={selectedCreationLocation}
             />
 
-            {/* LocationPickerModal 렌더링 */}
+            {/* LocationPickerModal */}
             {isLocationPickerOpen && (
                 <LocationPickerModal
                     isOpen={isLocationPickerOpen}
                     onClose={() => setIsLocationPickerOpen(false)}
-                    // ⭐️ 피커에서 위치를 선택하면 selectedCreationLocation 상태에 저장 ⭐️
                     onSelect={(loc) => {
                         setSelectedCreationLocation(loc); 
                         setIsLocationPickerOpen(false); 
                     }}
                     isMapLoaded={isLoaded}
-                    googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                    // googleMapsApiKey={GOOGLE_MAPS_API_KEY}
                 />
             )}
         </div>
