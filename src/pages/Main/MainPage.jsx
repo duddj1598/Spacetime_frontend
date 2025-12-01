@@ -1,9 +1,9 @@
 // ==============================
-// 📌 FINAL — API 버전 + 폴라로이드 디자인 MainPage.jsx
+// 📌 FINAL — API + 폴라로이드 디자인 + 팝업 추가 MainPage.jsx
 // ==============================
 
-import React, { useEffect, useState } from 'react';
-import { Search, Plus, Calendar, MapPin, Globe, Lock } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Search, Plus, Calendar, MapPin, Globe, Lock, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import BottomNavigation from "../../components/layout/BottomNavigation";
@@ -12,6 +12,80 @@ const API_BASE_URL = "http://localhost:8000/api/folder";
 
 const getCurrentUserId = () => {
   return localStorage.getItem("userId") || "test@user.com";
+};
+
+/* ===========================
+      📌 폴더 생성 팝업
+=========================== */
+const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
+  const [title, setTitle] = useState("");
+
+  if (!isOpen) return null;
+
+  const createFolder = async () => {
+    if (title.length < 2) {
+      alert("2글자 이상 입력해주세요");
+      return;
+    }
+
+    try {
+      const res = await axios.post(`${API_BASE_URL}`, {
+        title,
+        user_id: getCurrentUserId(),
+        is_public: false,
+        main_folder_img: "",
+      });
+
+      const newFolderId = res.data.folder_id;
+
+      onFolderCreated(newFolderId);
+      onClose();
+      setTitle("");
+    } catch (err) {
+      console.error(err);
+      alert("폴더 생성 실패");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div className="flex justify-between items-center px-6 py-4 border-b">
+          <h3 className="text-lg font-bold">나의 기록 폴더 추가</h3>
+          <button onClick={onClose}>
+            <X size={24} className="text-gray-600" />
+          </button>
+        </div>
+
+        <div className="px-6 py-4">
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">
+            폴더 제목
+          </label>
+          <input
+            type="text"
+            placeholder="2글자 이상 적어주세요."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full border rounded-lg px-4 py-3 text-sm border-gray-300"
+          />
+        </div>
+
+        <div className="px-6 pb-6">
+          <button
+            onClick={createFolder}
+            disabled={title.length < 2}
+            className={`w-full py-3 rounded-xl font-bold text-white shadow-md ${
+              title.length >= 2
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            생성하기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 /* -------------------------------------------------
@@ -30,7 +104,7 @@ const CalendarHeader = ({ title }) => (
 );
 
 /* -------------------------------------------------
-   ⭐ MyRecordCard (API용 + 폴라로이드 스타일)
+   ⭐ MyRecordCard
 ------------------------------------------------- */
 const MyRecordCard = ({ record }) => {
   const VisibilityIcon = record.is_public ? Globe : Lock;
@@ -38,7 +112,10 @@ const MyRecordCard = ({ record }) => {
   return (
     <div
       className="bg-white rounded-sm overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-      style={{ boxShadow: "0 4px 15px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.08)" }}
+      style={{
+        boxShadow:
+          "0 4px 15px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.08)",
+      }}
     >
       <div className="relative">
         <img
@@ -50,34 +127,23 @@ const MyRecordCard = ({ record }) => {
           className="w-full h-48 object-cover"
         />
 
-        <span className="absolute top-3 right-3 text-xs bg-white/95 text-gray-700 px-3 py-1.5 rounded-sm shadow-md flex items-center backdrop-blur-sm">
-          <Calendar size={12} className="mr-1.5 text-amber-600" strokeWidth={1.5} />
+        <span className="absolute top-3 right-3 text-xs bg-white/95 px-3 py-1.5 rounded-sm shadow-md flex items-center backdrop-blur-sm">
+          <Calendar size={12} className="mr-1.5 text-amber-600" />
           폴더
         </span>
       </div>
 
       <div className="p-5 pb-6 bg-white">
-        <h3
-          className="text-base font-medium text-gray-800 mb-3 truncate"
-          style={{ fontFamily: "Georgia, serif" }}
-        >
+        <h3 className="text-base font-medium text-gray-800 mb-3 truncate">
           {record.title}
         </h3>
 
         <div className="flex justify-between text-xs text-gray-500">
-          <div className="flex items-center space-x-1.5">
-            <VisibilityIcon
-              size={13}
-              className="text-amber-600/70"
-              strokeWidth={1.5}
-            />
+          <div className="flex items-center space-x-1">
+            <VisibilityIcon size={13} className="text-amber-600/70" />
             <span>{record.is_public ? "공개" : "비공개"}</span>
           </div>
-
-          <div className="flex items-center space-x-1.5">
-            <MapPin size={13} className="text-amber-600/70" />
-            <span>일기 {record.diary_count || 0}개</span>
-          </div>
+          <span>일기 {record.diary_count || 0}개</span>
         </div>
       </div>
     </div>
@@ -92,13 +158,6 @@ const FriendPostTile = ({ post }) => (
     className="bg-white rounded-sm p-3 pb-4 cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
     style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
   >
-    <div className="flex items-center justify-between mb-2.5">
-      <div className="flex items-center">
-        <span className="text-lg mr-2">👤</span>
-        <span className="text-xs font-medium text-gray-800">{post.owner_nickname}</span>
-      </div>
-    </div>
-
     <div className="bg-gray-50 p-1 rounded-sm mb-2.5">
       <img
         src={
@@ -109,10 +168,7 @@ const FriendPostTile = ({ post }) => (
       />
     </div>
 
-    <p
-      className="text-xs text-gray-600 truncate italic"
-      style={{ fontFamily: "Georgia, serif" }}
-    >
+    <p className="text-xs text-gray-600 truncate italic">
       {post.title}
     </p>
   </div>
@@ -131,16 +187,13 @@ export default function MainPage() {
   const [isLoadingMy, setIsLoadingMy] = useState(true);
   const [isLoadingFriends, setIsLoadingFriends] = useState(true);
 
-  /* ----------- API: 내 폴더 ----------- */
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const fetchMyRecords = async () => {
+    setIsLoadingMy(true);
     try {
-      setIsLoadingMy(true);
       const userId = getCurrentUserId();
-
-      const res = await axios.get(
-        `${API_BASE_URL}/list/me?user_id=${userId}`
-      );
-
+      const res = await axios.get(`${API_BASE_URL}/list/me?user_id=${userId}`);
       setMyRecords(res.data.folders || []);
     } catch (e) {
       console.error("내 폴더 로드 실패", e);
@@ -149,16 +202,13 @@ export default function MainPage() {
     }
   };
 
-  /* ----------- API: 친구 폴더 ----------- */
   const fetchFriendRecords = async () => {
+    setIsLoadingFriends(true);
     try {
-      setIsLoadingFriends(true);
       const userId = getCurrentUserId();
-
       const res = await axios.get(
         `${API_BASE_URL}/list/friends?user_id=${userId}`
       );
-
       setFriendRecords(res.data.folders || []);
     } catch (e) {
       console.error("친구 폴더 로드 실패", e);
@@ -167,7 +217,6 @@ export default function MainPage() {
     }
   };
 
-  /* ----------- 초기 로드 ----------- */
   useEffect(() => {
     fetchMyRecords();
     fetchFriendRecords();
@@ -176,30 +225,25 @@ export default function MainPage() {
   return (
     <div className="relative flex min-h-screen bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/50 pb-20">
 
-      {/* 메인 컨텐츠 */}
-      <main className="relative z-10 flex-grow p-8 max-w-screen-xl ml-20">
+      <main className="relative z-10 flex-grow p-8 max-w-screen-xl mx-auto">
 
-        {/* 앱 상단 */}
+        {/* 상단 로고 */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
             <span className="text-2xl">📸</span>
           </div>
           <div>
-            <h1
-              className="text-xl font-light text-gray-800 tracking-wide leading-tight"
-              style={{ fontFamily: "Georgia, serif" }}
-            >
+            <h1 className="text-xl font-light text-gray-800 tracking-wide leading-tight">
               Spacetime Polaroid
             </h1>
-            <p className="text-xs text-gray-500 tracking-wide">
-              당신의 여행 이야기
-            </p>
+            <p className="text-xs text-gray-500">당신의 여행 이야기</p>
           </div>
         </div>
 
+        {/* 폴더 목록 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-
-          {/* ------------------ 나의 기록 ------------------ */}
+          
+          {/* 나의 기록 */}
           <section>
             <CalendarHeader title="나의 기록" />
 
@@ -219,7 +263,7 @@ export default function MainPage() {
             )}
           </section>
 
-          {/* ------------------ 친구의 기록 ------------------ */}
+          {/* 친구의 기록 */}
           <section>
             <CalendarHeader title="친구의 기록" />
 
@@ -237,11 +281,24 @@ export default function MainPage() {
               </div>
             )}
           </section>
-
         </div>
       </main>
 
-      {/* 하단 네비게이션 */}
+      {/* ⭐ 중앙 하단 + 버튼 (모달 오픈) */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-20 right-1/2 translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-xl hover:scale-105 transition-all z-50"
+      >
+        <Plus size={32} />
+      </button>
+
+      {/* 팝업 */}
+      <FolderAddModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onFolderCreated={(id) => navigate(`/folder/${id}`)}
+      />
+
       <BottomNavigation />
     </div>
   );
