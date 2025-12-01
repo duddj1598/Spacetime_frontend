@@ -6,12 +6,15 @@ import { Home, UserPlus, Bell, User, Plus } from 'lucide-react';
 const navItems = [
   { href: '/main', icon: Home, label: '홈' },
   { href: '/friend', icon: UserPlus, label: '친구' },
-  { href: '/create', icon: Plus, label: '작성', isCenter: true },
+
+  // ⭐ 페이지 이동 제거 — 폴더 생성 기능만 실행하도록 변경
+  { icon: Plus, label: '작성', isCenter: true },
+
   { href: '/alarm', icon: Bell, label: '알림' },
   { href: '/mypage', icon: User, label: '마이' },
 ];
 
-export default function BottomNavigation() {
+export default function BottomNavigation({ onPlusClick }) {
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -23,24 +26,26 @@ export default function BottomNavigation() {
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
-            
-            // 중앙 작성 버튼
+
+            // ⭐ 중앙 작성 버튼
             if (item.isCenter) {
               return (
-                <Link key={item.href} to={item.href}>
-                  <button className="flex flex-col items-center justify-center -mt-6">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                      <Icon size={28} className="text-white" strokeWidth={2} />
-                    </div>
-                    <span className="text-[10px] text-gray-600 mt-1 font-medium">
-                      {item.label}
-                    </span>
-                  </button>
-                </Link>
+                <button
+                  key="center-plus"
+                  onClick={onPlusClick}
+                  className="flex flex-col items-center justify-center -mt-6"
+                >
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                    <Icon size={28} className="text-white" strokeWidth={2} />
+                  </div>
+                  <span className="text-[10px] text-gray-600 mt-1 font-medium">
+                    {item.label}
+                  </span>
+                </button>
               );
             }
-            
-            // 일반 네비게이션 아이템
+
+            // 일반 네비 아이템
             return (
               <Link key={item.href} to={item.href}>
                 <button className="flex flex-col items-center justify-center py-2 px-3 min-w-[60px] group">
@@ -62,11 +67,6 @@ export default function BottomNavigation() {
                   >
                     {item.label}
                   </span>
-                  
-                  {/* Active 인디케이터 */}
-                  {isActive && (
-                    <div className="absolute bottom-0 w-1 h-1 rounded-full bg-amber-600 mt-1"></div>
-                  )}
                 </button>
               </Link>
             );

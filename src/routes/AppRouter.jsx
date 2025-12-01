@@ -7,22 +7,25 @@ import MyPage from '../pages/MyPage/MyPage.jsx';
 import Friend from '../pages/Friend/FriendAddPage.jsx';
 import Diary from "../pages/Diary/DiaryPage.jsx";
 import Main from "../pages/Main/MainPage.jsx";
-import FolderMapPage from "../pages/Diary/FolderMapPage";
+import FolderMapPage from "../pages/Diary/FolderMapPage.jsx";
+import DiaryWrite from "../pages/Diary/DiaryWrite.jsx";   // ⭐ 추가됨
 import App from "../App.jsx";
 
 export default function AppRouter() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />   {/* 첫 화면 */}
-        <Route path="findpassword" element={<FindPassword />} /> {/* 비밀번호 찾기 */}
-        <Route path="/signup" element={<SignupPage />} /> {/* 회원가입 */}
-        {/* 로그인 성공 후 */}
+        <Route path="/" element={<LoginPage />} />
+        <Route path="findpassword" element={<FindPassword />} />
+        <Route path="/signup" element={<SignupPage />} />
+
+        {/* 로그인 후 페이지 */}
         <Route path="/alarm" element={<AlarmPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/friend" element={<Friend />} />
         <Route path="/diary/:diary_id" element={<Diary />} />
         <Route path="/folder/:folderId" element={<FolderMapPage />} />
+        <Route path="/diary/write" element={<DiaryWrite />} />  {/* ⭐⭐ 추가됨 */}
         <Route path="/main" element={<Main />} />
       </Routes>
     </Router>
