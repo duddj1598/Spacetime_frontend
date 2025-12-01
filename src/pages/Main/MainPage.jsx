@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, Plus, Calendar, MapPin, Globe, Lock, X } from "lucide-react";
+import { Search, Plus, Calendar, MapPin, Globe, Lock, X, Upload, Image as ImageIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import BottomNavigation from "../../components/layout/BottomNavigation";
@@ -40,35 +40,79 @@ const FriendPostTile = ({ post, onClick }) => {
 
 
 /* ===========================
-      📌 폴더 생성 팝업
+      📌 폴더 생성 팝업 (이미지 업로드 추가)
 =========================== */
 const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
   const [title, setTitle] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   if (!isOpen) return null;
 
+  // 이미지 파일 선택 핸들러
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      // 미리보기 URL 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 이미지 제거
+  const removeImage = () => {
+    setSelectedImage(null);
+    setPreviewUrl(null);
+  };
+
+  // 폴더 생성
   const createFolder = async () => {
     if (title.length < 2) {
       alert("2글자 이상 입력해주세요");
       return;
     }
 
+    setIsUploading(true);
+
     try {
+      let imageUrl = "";
+
+      // 이미지가 선택된 경우 Base64로 변환
+      if (selectedImage) {
+        const reader = new FileReader();
+        imageUrl = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(selectedImage);
+        });
+      }
+
       const res = await axios.post(`${API_BASE_URL}`, {
         title,
         user_id: getCurrentUserId(),
         is_public: false,
-        main_folder_img: "",
+        main_folder_img: imageUrl,
       });
 
       const newFolderId = res.data.folder_id;
 
       onFolderCreated(newFolderId);
       onClose();
+      
+      // 상태 초기화
       setTitle("");
+      setSelectedImage(null);
+      setPreviewUrl(null);
     } catch (err) {
       console.error(err);
       alert("폴더 생성 실패");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -82,30 +126,67 @@ const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
           </button>
         </div>
 
-        <div className="px-6 py-4">
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">
-            폴더 제목
-          </label>
-          <input
-            type="text"
-            placeholder="2글자 이상 적어주세요."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded-lg px-4 py-3 text-sm border-gray-300"
-          />
+        <div className="px-6 py-4 space-y-4">
+          {/* 폴더 제목 입력 */}
+          <div>
+            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+              폴더 제목
+            </label>
+            <input
+              type="text"
+              placeholder="2글자 이상 적어주세요."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full border rounded-lg px-4 py-3 text-sm border-gray-300"
+            />
+          </div>
+
+          {/* 대표 이미지 업로드 */}
+          <div>
+            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+              대표 이미지 (선택)
+            </label>
+            
+            {!previewUrl ? (
+              <label className="w-full h-40 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors">
+                <Upload size={32} className="text-gray-400 mb-2" />
+                <span className="text-sm text-gray-500">이미지 업로드</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="px-6 pb-6">
           <button
             onClick={createFolder}
-            disabled={title.length < 2}
+            disabled={title.length < 2 || isUploading}
             className={`w-full py-3 rounded-xl font-bold text-white shadow-md ${
-              title.length >= 2
+              title.length >= 2 && !isUploading
                 ? "bg-indigo-600 hover:bg-indigo-700"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            생성하기
+            {isUploading ? "생성 중..." : "생성하기"}
           </button>
         </div>
       </div>
@@ -293,5 +374,3 @@ export default function MainPage() {
     </div>
   );
 }
-
-
