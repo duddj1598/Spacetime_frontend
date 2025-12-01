@@ -1,7 +1,7 @@
 // src/components/mypage/FolderCard.jsx
 
 import { useState } from "react";
-import { Globe, Lock } from "lucide-react";
+import { Globe, Lock, Camera } from "lucide-react";
 import axios from "axios";
 
 export default function FolderCard({ 
@@ -17,7 +17,7 @@ export default function FolderCard({
   const [currentIsPublic, setCurrentIsPublic] = useState(isPublic);
 
   const handleToggle = async (e) => {
-    e.stopPropagation(); // 카드 클릭 이벤트 방지
+    e.stopPropagation();
 
     setIsTogglingPublic(true);
     try {
@@ -45,10 +45,11 @@ export default function FolderCard({
   return (
     <div
       onClick={onClick}
-      className="relative flex-shrink-0 w-64 bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+      className="relative flex-shrink-0 w-64 bg-white/90 backdrop-blur-sm rounded-sm border border-amber-100/50 overflow-hidden cursor-pointer hover:shadow-lg transition-all"
+      style={{ boxShadow: '0 4px 20px rgba(251, 191, 36, 0.08)' }}
     >
       {/* 대표 이미지 */}
-      <div className="relative h-40 bg-gray-100">
+      <div className="relative h-40 bg-gradient-to-br from-amber-50 to-orange-50">
         {mainImage ? (
           <img
             src={mainImage}
@@ -56,12 +57,12 @@ export default function FolderCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            📁 {title}
+          <div className="w-full h-full flex items-center justify-center">
+            <Camera size={48} strokeWidth={1} className="text-amber-300" />
           </div>
         )}
         
-        {/* 공개/비공개 토글 버튼 */}
+        {/* 공개/비공개 토글 */}
         <button
           onClick={handleToggle}
           disabled={isTogglingPublic}
@@ -69,10 +70,10 @@ export default function FolderCard({
             isTogglingPublic 
               ? 'bg-gray-300 cursor-not-allowed' 
               : currentIsPublic
-                ? 'bg-green-500 hover:bg-green-600'
-                : 'bg-gray-500 hover:bg-gray-600'
+                ? 'bg-gradient-to-br from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600'
+                : 'bg-gradient-to-br from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
           }`}
-          title={currentIsPublic ? "공개 중 (클릭하여 비공개)" : "비공개 중 (클릭하여 공개)"}
+          title={currentIsPublic ? "공개 중" : "비공개 중"}
         >
           {isTogglingPublic ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -86,16 +87,17 @@ export default function FolderCard({
 
       {/* 폴더 정보 */}
       <div className="p-4">
-        <h4 className="text-lg font-semibold text-gray-800 mb-2 truncate">
+        <h4 className="text-lg font-medium text-gray-800 mb-2 truncate" 
+            style={{ fontFamily: 'Georgia, serif' }}>
           {title}
         </h4>
         
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>일기 {diaryCount}개</span>
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+          <span className={`px-2 py-1 rounded-sm text-xs font-semibold border ${
             currentIsPublic 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-gray-100 text-gray-700'
+              ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200' 
+              : 'bg-gray-100 text-gray-700 border-gray-200'
           }`}>
             {currentIsPublic ? '🌍 공개' : '🔒 비공개'}
           </span>
