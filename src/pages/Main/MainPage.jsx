@@ -11,6 +11,35 @@ const getCurrentUserId = () => {
 };
 
 /* ===========================
+      ⭐ 친구의 기록 Tile
+=========================== */
+const FriendPostTile = ({ post, onClick }) => {
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white rounded-md overflow-hidden shadow hover:shadow-lg cursor-pointer transition-all"
+    >
+      <img
+        src={
+          post.main_folder_img ||
+          "https://via.placeholder.com/300x200?text=No+Image"
+        }
+        alt={post.title}
+        className="w-full h-32 object-cover"
+      />
+
+      <div className="p-3">
+        <h4 className="text-sm font-semibold text-gray-800 truncate">
+          {post.title}
+        </h4>
+        <p className="text-xs text-gray-500 mt-1">일기 {post.diary_count}개</p>
+      </div>
+    </div>
+  );
+};
+
+
+/* ===========================
       📌 폴더 생성 팝업
 =========================== */
 const FolderAddModal = ({ isOpen, onClose, onFolderCreated }) => {
@@ -264,3 +293,5 @@ export default function MainPage() {
     </div>
   );
 }
+
+
