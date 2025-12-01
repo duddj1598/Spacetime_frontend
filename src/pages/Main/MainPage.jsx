@@ -1,7 +1,3 @@
-// ==============================
-// 📌 FINAL — API + 폴라로이드 디자인 + 팝업 추가 MainPage.jsx
-// ==============================
-
 import React, { useEffect, useState } from "react";
 import { Search, Plus, Calendar, MapPin, Globe, Lock, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -150,34 +146,6 @@ const MyRecordCard = ({ record }) => {
   );
 };
 
-/* -------------------------------------------------
-   친구 포스트 카드
-------------------------------------------------- */
-const FriendPostTile = ({ post }) => (
-  <div
-    className="bg-white rounded-sm p-3 pb-4 cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-    style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
-  >
-    <div className="bg-gray-50 p-1 rounded-sm mb-2.5">
-      <img
-        src={
-          post.main_folder_img ||
-          "https://via.placeholder.com/150x150?text=Folder"
-        }
-        className="w-full h-28 object-cover rounded-sm"
-      />
-    </div>
-
-    <p className="text-xs text-gray-600 truncate italic">
-      {post.title}
-    </p>
-  </div>
-);
-
-/* -------------------------------------------------
-   📌 MAIN PAGE
-------------------------------------------------- */
-
 export default function MainPage() {
   const navigate = useNavigate();
 
@@ -284,22 +252,15 @@ export default function MainPage() {
         </div>
       </main>
 
-      {/* ⭐ 중앙 하단 + 버튼 (모달 오픈) */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-20 right-1/2 translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-xl hover:scale-105 transition-all z-50"
-      >
-        <Plus size={32} />
-      </button>
-
-      {/* 팝업 */}
+      {/* ⭐ 폴더 생성 모달 */}
       <FolderAddModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onFolderCreated={(id) => navigate(`/folder/${id}`)}
       />
 
-      <BottomNavigation />
+      {/* ⭐ 하단 네비게이션 */}
+      <BottomNavigation onPlusClick={() => setIsModalOpen(true)} />
     </div>
   );
 }
