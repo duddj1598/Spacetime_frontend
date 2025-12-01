@@ -1,19 +1,18 @@
 // src/pages/MyPage/MyPage.jsx
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { LogOut, Camera } from "lucide-react";
 
 // 컴포넌트
-import Sidebar from "../../components/layout/Sidebar";
-import FolderCard from "../../components/mypage/FolderCard";
+import BottomNavigation from "../../components/layout/BottomNavigation";
+import RecordCard from "../../components/main/RecordCard";
 import MonthlyRecord from "../../components/main/MonthlyRecord";
 import UserProfile from "../../components/common/UserProfile"; 
 
 export default function MyPage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [folders, setFolders] = useState([]); // ⭐️ 일기 → 폴더로 변경
+  const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export default function MyPage() {
 
       if (!token) {
         console.log("❌ 토큰 없음, 로그인 필요");
-        navigate("/login");
+        window.location.href = "/login";
         return;
       }
 
@@ -39,25 +38,25 @@ export default function MyPage() {
       console.log("✅ 사용자 정보:", userRes.data);
       setUser(userRes.data.data);
 
-      // 2. ⭐️ 나의 폴더 목록 조회 (일기 포함)
-      const foldersRes = await axios.get("http://localhost:8000/api/user/my-diaries", {
+      // 2. 나의 기록 모아보기 데이터 조회
+      const recordsRes = await axios.get("http://localhost:8000/api/user/my-diaries", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("✅ 나의 폴더:", foldersRes.data);
+      console.log("✅ 나의 기록:", recordsRes.data);
       
-      // ⭐️ 폴더 데이터 그대로 사용
-      const folderList = foldersRes.data.data.map(folder => ({
-        folder_id: folder.folder_id,
-        title: folder.title,
-        is_public: folder.is_public,
-        main_folder_img: folder.main_folder_img,
-        diary_count: folder.diaries.length,
-        // 첫 번째 일기의 사진을 대표 이미지로 사용
-        mainImage: folder.main_folder_img || (folder.diaries[0]?.main_photo) || null
-      }));
+      // 모든 폴더의 일기를 평면화하여 RecordCard에 전달
+      const allDiaries = recordsRes.data.data.flatMap(folder => 
+        folder.diaries.map(diary => ({
+          diary_id: diary.diary_id,
+          title: diary.title,
+          imageUrl: diary.main_photo || "/placeholder.png",
+          location: diary.location ? `${diary.location.lat}, ${diary.location.lng}` : "",
+          theme: diary.theme
+        }))
+      );
 
-      setFolders(folderList);
+      setRecords(allDiaries);
 
     } catch (err) {
       console.error("❌ 마이페이지 데이터 조회 실패:", err);
@@ -65,7 +64,7 @@ export default function MyPage() {
       if (err.response?.status === 401) {
         alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.clear();
-        navigate("/login");
+        window.location.href = "/login";
       }
     } finally {
       setLoading(false);
@@ -80,44 +79,40 @@ export default function MyPage() {
     }));
   };
 
-  // ⭐️ 폴더 공개 설정 변경 콜백
-  const handleTogglePublic = (folderId, newIsPublic) => {
-    setFolders(prev => 
-      prev.map(folder => 
-        folder.folder_id === folderId 
-          ? { ...folder, is_public: newIsPublic }
-          : folder
-      )
-    );
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/50">
+        <div className="text-xl text-gray-600 italic" style={{ fontFamily: 'Georgia, serif' }}>
+          Loading your memories...
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/50">
         <div className="text-xl text-red-600">사용자 정보를 불러올 수 없습니다.</div>
       </div>
     );
   }
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <div className="flex flex-col bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/50 min-h-screen pb-20">
       
-      {/* 1. 사이드바 */}
-      <Sidebar />
+      {/* 배경 장식 요소 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-40 left-20 w-64 h-64 bg-amber-200/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-40 right-20 w-80 h-80 bg-rose-200/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/3 right-1/3 w-48 h-48 bg-orange-200/10 rounded-full blur-3xl"></div>
+      </div>
       
       {/* 2. 메인 콘텐츠 영역 */}
-      <main className="flex-grow ml-32 p-8 pl-12">
+      <main className="relative z-10 flex-grow p-6 pt-8 max-w-screen-xl mx-auto w-full">
         
         {/* 상단 유저 정보 + 로그아웃 */}
-        <header className="flex items-center justify-between mb-8 p-4 bg-white rounded-lg shadow-md border border-gray-100">
+        <header className="flex items-center justify-between mb-10 p-6 bg-white/90 backdrop-blur-sm rounded-sm border border-amber-100/50"
+                style={{ boxShadow: '0 4px 20px rgba(251, 191, 36, 0.08)' }}>
           
           <UserProfile 
             nickname={user.nickname}
@@ -127,42 +122,55 @@ export default function MyPage() {
           
           <button
             onClick={() => {
-              localStorage.clear();
-              navigate("/login");
+              if (window.confirm("로그아웃 하시겠습니까?")) {
+                localStorage.clear();
+                window.location.href = "/";
+              }
             }}
-            className="text-red-500 hover:text-red-600 text-sm font-semibold p-2 border border-red-500 rounded-full px-4 transition-colors"
+            className="flex items-center gap-2 text-red-500 hover:text-white bg-white hover:bg-red-500 text-sm font-medium px-5 py-2.5 border-2 border-red-500 rounded-sm transition-all shadow-sm hover:shadow-md"
           >
+            <LogOut size={16} strokeWidth={1.5} />
             로그아웃
           </button>
         </header>
 
-        {/* ⭐️ 나의 폴더 모아보기 */}
-        <section className="bg-white rounded-lg shadow-md border border-gray-100 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6 border-b pb-2">
-            <h3 className="text-xl font-semibold">나의 기록 모아보기</h3>
-            <span className="text-sm text-gray-500">
-              총 {folders.length}개 폴더
-            </span>
+        {/* 나의 기록 모아보기 */}
+        <section className="bg-white/90 backdrop-blur-sm rounded-sm border border-amber-100/50 p-8 mb-8"
+                 style={{ boxShadow: '0 4px 20px rgba(251, 191, 36, 0.08)' }}>
+          
+          {/* 섹션 헤더 */}
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+            <Camera className="text-amber-600" size={24} strokeWidth={1.5} />
+            <h3 className="text-2xl font-light text-gray-800 tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>
+              나의 기록 모아보기
+            </h3>
           </div>
           
-          <div className="flex space-x-6 overflow-x-auto pb-4">
-            {folders.length > 0 ? (
-              folders.map((folder) => (
-                <FolderCard 
-                  key={folder.folder_id}
-                  folderId={folder.folder_id}
-                  title={folder.title}
-                  mainImage={folder.mainImage}
-                  diaryCount={folder.diary_count}
-                  isPublic={folder.is_public}
-                  onClick={() => navigate(`/folder/${folder.folder_id}`)}
-                  onTogglePublic={handleTogglePublic}
+          <div className="flex space-x-6 overflow-x-auto pb-4 scrollbar-hide">
+            {records.length > 0 ? (
+              records.map((record) => (
+                <RecordCard 
+                  key={record.diary_id}
+                  imageUrl={record.imageUrl}
+                  title={record.title}
+                  location={record.location}
+                  date=""
+                  onClick={() => {
+                    window.location.href = `/diary/${record.diary_id}`;
+                  }}
                 />
               ))
             ) : (
-              <div className="w-full text-center text-gray-500 py-12">
-                <p className="text-lg mb-2">아직 작성한 폴더가 없습니다.</p>
-                <p className="text-sm">첫 여행 폴더를 만들어보세요! 📁✈️</p>
+              <div className="w-full text-center py-16">
+                <div className="inline-block p-6 bg-amber-50/50 rounded-sm border-2 border-dashed border-amber-200">
+                  <Camera className="text-amber-400 mx-auto mb-3" size={48} strokeWidth={1} />
+                  <p className="text-gray-500 italic" style={{ fontFamily: 'Georgia, serif' }}>
+                    아직 작성한 기록이 없습니다.
+                  </p>
+                  <p className="text-gray-400 text-sm mt-1">
+                    첫 여행을 기록해보세요! ✈️
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -179,6 +187,20 @@ export default function MyPage() {
         </section>
 
       </main>
+
+      {/* 하단 네비게이션 */}
+      <BottomNavigation />
+
+      {/* 스크롤바 숨김 스타일 */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

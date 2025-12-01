@@ -1,53 +1,44 @@
-/* 전체 감싸는 container */
+/* 전체 구조 */
 .app-container {
+  min-height: 100vh;
   display: flex;
-  height: 100vh;
-  align-items: center;
-  background-color: #fcf9f0; /* 배경 아이보리 같은 색 */
+  background-color: #f8f4eb;
 }
 
-/* 왼쪽 사이드바 */
+/* 사이드바 */
 .sidebar {
-  width: 70px;
-  background-color: #e6e3d3; /* 약한 베이지 */
-  border-radius: 40px;
-  padding: 20px 0;
+  width: 80px;
+  background-color: #f3eee4;
+  border-right: 1px solid #dcd7c7;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  margin: 15px;
-  height: fit-content; 
-  position: fixed;       /* 🔥 중앙 고정 */
-  top: 50%;
-  left: 20px;
-  transform: translateY(-50%); /* 중앙 배치 핵심 */
-  box-shadow: 4px 6px 10px rgba(0, 0, 0, 0.15);
+  padding: 24px 0;
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* 아이콘 버튼 공용 */
 .sidebar-icon {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
+  margin-bottom: 24px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  cursor: pointer;
-}
-
-/* 선택됨 (active 상태) */
-.sidebar-icon.active {
-  background-color: #ffffff;
-  border: 2px solid #4f6f4f; /* 녹색 아웃라인 */
+  justify-content: center;
   border-radius: 16px;
+  border: 2px solid transparent;
+  background-color: transparent;
+  color: #000;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* 아이콘 hover 효과 */
-.sidebar-icon:hover {
-  background-color: #f5f5f5;
+.sidebar-icon.active {
+  border-color: #4b6b4b;
+  background-color: #ffffff;
+  color: #4b6b4b;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* 메인 영역 */
@@ -337,3 +328,74 @@ textarea {
   color: #444;
 }
 
+.map-container {
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.google-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===========================
+   DiaryWrite 지도 디자인 통일
+   =========================== */
+
+.diary-map-wrapper {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 지도 크기 통일 */
+.diary-map-container {
+  width: 100%;
+  height: 360px;        
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.diary-google-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* 지도 아래 날짜/공개하기 영역 */
+.diary-left-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.public-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #444;
+}
+
+.public-help {
+  font-size: 13px;
+  color: #777;
+}

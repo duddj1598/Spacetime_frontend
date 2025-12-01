@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, UserPlus, Bell, User } from 'lucide-react';
-import './Diary.css'; // 너의 디자인 CSS 유지
+import './Diary.css'; 
 
 const navItems = [
   { href: '/main', icon: <Home size={24} />, label: '홈' },
