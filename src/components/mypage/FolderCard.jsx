@@ -1,0 +1,106 @@
+// src/components/mypage/FolderCard.jsx
+
+import { useState } from "react";
+import { Globe, Lock } from "lucide-react";
+import axios from "axios";
+
+export default function FolderCard({ 
+  folderId, 
+  title, 
+  mainImage, 
+  diaryCount, 
+  isPublic, 
+  onClick,
+  onTogglePublic 
+}) {
+  const [isTogglingPublic, setIsTogglingPublic] = useState(false);
+  const [currentIsPublic, setCurrentIsPublic] = useState(isPublic);
+
+  const handleToggle = async (e) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
+
+    setIsTogglingPublic(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const newIsPublic = !currentIsPublic;
+
+      await axios.put(
+        `http://localhost:8000/api/folder/${folderId}/visibility`,
+        { is_public: newIsPublic },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setCurrentIsPublic(newIsPublic);
+      if (onTogglePublic) {
+        onTogglePublic(folderId, newIsPublic);
+      }
+    } catch (err) {
+      console.error("❌ 공개 설정 변경 실패:", err);
+      alert("공개 설정 변경에 실패했습니다.");
+    } finally {
+      setIsTogglingPublic(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClick}
+      className="relative flex-shrink-0 w-64 bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+    >
+      {/* 대표 이미지 */}
+      <div className="relative h-40 bg-gray-100">
+        {mainImage ? (
+          <img
+            src={mainImage}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            📁 {title}
+          </div>
+        )}
+        
+        {/* 공개/비공개 토글 버튼 */}
+        <button
+          onClick={handleToggle}
+          disabled={isTogglingPublic}
+          className={`absolute top-2 right-2 p-2 rounded-full shadow-lg transition-all ${
+            isTogglingPublic 
+              ? 'bg-gray-300 cursor-not-allowed' 
+              : currentIsPublic
+                ? 'bg-green-500 hover:bg-green-600'
+                : 'bg-gray-500 hover:bg-gray-600'
+          }`}
+          title={currentIsPublic ? "공개 중 (클릭하여 비공개)" : "비공개 중 (클릭하여 공개)"}
+        >
+          {isTogglingPublic ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : currentIsPublic ? (
+            <Globe size={20} className="text-white" />
+          ) : (
+            <Lock size={20} className="text-white" />
+          )}
+        </button>
+      </div>
+
+      {/* 폴더 정보 */}
+      <div className="p-4">
+        <h4 className="text-lg font-semibold text-gray-800 mb-2 truncate">
+          {title}
+        </h4>
+        
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <span>일기 {diaryCount}개</span>
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+            currentIsPublic 
+              ? 'bg-green-100 text-green-700' 
+              : 'bg-gray-100 text-gray-700'
+          }`}>
+            {currentIsPublic ? '🌍 공개' : '🔒 비공개'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
