@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Plus, X, MapPin } from 'lucide-react';
+import { Plus, X, MapPin, Calendar } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api"; 
 import axios from 'axios';
-
 import BottomNavigation from '../../components/layout/BottomNavigation';
+
 import LocationPickerModal from '../../components/diary/LocationPickerModal'; 
 
 // API 및 지도 설정 상수
@@ -81,6 +81,20 @@ const DiaryAddModal = ({ isOpen, onClose, folderTitle, onDiaryCreate, onOpenLoca
   );
 };
 
+// 날짜 포맷 함수
+const formatDate = (dateString) => {
+  if (!dateString) return null;
+  try {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  } catch (e) {
+    return null;
+  }
+};
+
 
 // ------------------------------------------------------
 // 📌 FolderMapPage 메인 컴포넌트
@@ -143,8 +157,8 @@ export default function FolderMapPage() {
       : defaultCenter;
 
   return (
-    <div className="relative min-h-screen pb-20 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/50">
-
+    <div className="relative min-h-screen bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/50 pb-24">
+      
       {/* 헤더 */}
       <main className="relative z-10 flex-grow p-8 max-w-screen-xl mx-auto">
         <h1 className="text-3xl font-light tracking-wide text-gray-800 mb-6">
@@ -201,19 +215,32 @@ export default function FolderMapPage() {
               {diaries.map((d) => (
                 <div 
                   key={d.diary_id}
-                  onClick={() => navigate(`/diary/${d.diary_id}`)}
+                  onClick={() => navigate(`/diary/detail/${d.diary_id}`)}
                   className="p-4 bg-white/90 rounded-sm border cursor-pointer hover:shadow-lg transition"
                 >
                   {d.main_photo && (
                     <img 
                       src={d.main_photo}
                       className="w-full h-32 object-cover rounded-sm mb-2"
+                      alt={d.title}
                     />
                   )}
-                  <h3 className="font-medium truncate">{d.title}</h3>
+                  
+                  <h3 className="font-medium truncate mb-2">{d.title}</h3>
+                  
+                  {/* 날짜 표시 */}
+                  {d.date && (
+                    <div className="flex items-center gap-1 text-xs text-amber-600 mb-1">
+                      <Calendar size={14} />
+                      <span>{formatDate(d.date)}</span>
+                    </div>
+                  )}
+                  
+                  {/* 위치 표시 */}
                   {d.location && (
-                    <p className="text-sm text-gray-500">
-                      📍 {d.location.lat.toFixed(2)}, {d.location.lng.toFixed(2)}
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <MapPin size={14} />
+                      {d.location.lat.toFixed(2)}, {d.location.lng.toFixed(2)}
                     </p>
                   )}
                 </div>
@@ -246,8 +273,16 @@ export default function FolderMapPage() {
         />
       )}
 
-      {/* ⭐ 하단 네비게이션 추가 */}
-      <BottomNavigation onPlusClick={() => setIsDiaryModalOpen(true)} />
+      {/* ⭐ 플로팅 + 버튼 (우측 하단에 고정) */}
+      <button
+        onClick={() => setIsDiaryModalOpen(true)}
+        className="fixed bottom-20 right-12 w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50"
+        aria-label="일기 추가"
+      >
+        <Plus size={32} strokeWidth={2.5} />
+      </button>
+      
+      <BottomNavigation onPlusClick={() => navigate(`/folder/${folderId}`)} />
     </div>
   );
 }

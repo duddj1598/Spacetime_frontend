@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "tailwind:init": "tailwindcss init -p",
+    "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
