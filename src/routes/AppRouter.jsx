@@ -9,6 +9,7 @@ import Diary from "../pages/Diary/DiaryPage.jsx";
 import Main from "../pages/Main/MainPage.jsx";
 import FolderMapPage from "../pages/Diary/FolderMapPage.jsx";
 import DiaryWrite from "../pages/Diary/DiaryWrite.jsx";   // ⭐ 추가됨
+import DiaryDetailPage from '../pages/Diary/DiaryDetailPage';
 import App from "../App.jsx";
 
 export default function AppRouter() {
@@ -24,6 +25,7 @@ export default function AppRouter() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/friend" element={<Friend />} />
         <Route path="/diary/:diary_id" element={<Diary />} />
+        <Route path="/diary/detail/:diaryId" element={<DiaryDetailPage />} />
         <Route path="/folder/:folderId" element={<FolderMapPage />} />
         <Route path="/diary/write" element={<DiaryWrite />} />  {/* ⭐⭐ 추가됨 */}
         <Route path="/main" element={<Main />} />

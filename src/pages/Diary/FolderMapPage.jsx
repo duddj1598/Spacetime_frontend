@@ -215,7 +215,7 @@ export default function FolderMapPage() {
               {diaries.map((d) => (
                 <div 
                   key={d.diary_id}
-                  onClick={() => navigate(`/diary/${d.diary_id}`)}
+                  onClick={() => navigate(`/diary/detail/${d.diary_id}`)}
                   className="p-4 bg-white/90 rounded-sm border cursor-pointer hover:shadow-lg transition"
                 >
                   {d.main_photo && (
